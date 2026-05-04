@@ -1,0 +1,35 @@
+# =====================================================
+# NACLIP-SR-MC requirements
+# 환경: Python 3.10, CUDA 11.8
+# 검증: NVIDIA A100 80GB (Elice 클라우드)
+# =====================================================
+
+# === Core ===
+# PyTorch (CUDA 11.8 빌드)
+# 별도 설치 권장:
+#   pip install torch==2.0.0+cu118 torchvision==0.15.1+cu118 \
+#       -f https://download.pytorch.org/whl/cu118/torch_stable.html
+
+# === MMCV / MMSegmentation 스택 ===
+# mmcv는 별도 설치 (PyTorch 버전 호환 wheel 사용):
+#   pip install mmcv==2.0.1 \
+#       -f https://download.openmmlab.com/mmcv/dist/cu118/torch2.0.0/index.html
+mmsegmentation==1.1.1
+mmengine==0.8.4
+
+# === CLIP / 텍스트 처리 ===
+ftfy==6.3.1
+regex
+yapf==0.40.1
+
+# === 수치 / 이미지 처리 ===
+numpy<2
+opencv-python-headless
+Pillow
+
+# === 진행률 표시 / 유틸리티 ===
+tqdm
+
+# === SAM2 마스크 생성 시 (선택, sam2env에서 별도 설치) ===
+# iopath
+# 그 외 SAM2 의존성은 https://github.com/facebookresearch/sam2 참조

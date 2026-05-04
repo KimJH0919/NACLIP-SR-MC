@@ -1,0 +1,90 @@
+# =====================================================
+# NACLIP-SR-MC .gitignore
+# 데이터셋 / 모델 가중치 / 캐시 / 결과 대용량 파일 차단
+# =====================================================
+
+# === 절대 GitHub에 올리면 안 되는 것 ===
+
+# Datasets (수 GB)
+datasets/
+data/
+**/VOCdevkit/
+**/VOC2012/
+**/coco/
+**/ADEChallengeData2016/
+**/cityscapes/
+**/Pascal_Context/
+
+# SAM2 region masks (1,449~5,000 npz files, 수백 MB)
+region_masks/
+**/region_masks/
+
+# Pretrained model weights
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+checkpoints/
+weights/
+sam2_hiera_*.pt
+
+# === Python 표준 ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+build/
+dist/
+
+# 가상환경
+venv/
+env/
+ENV/
+.venv/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# === IDE / Editor ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# === 실험 결과 (선택적으로 일부만 push) ===
+# 전체 vis 결과는 무겁게 차단, 발표용 샘플만 별도 폴더로
+visualization_full/
+output_full/
+logs/
+*.log
+work_dirs/
+
+# === 큰 결과 이미지 / 영상 ===
+demo_video/
+*.mp4
+*.avi
+*.mov
+
+# 단, 발표용 샘플 이미지는 명시적 화이트리스트로 push:
+!docs/sample_results/
+!docs/figures/
+
+# === 임시 / 백업 ===
+*.bak
+*.tmp
+.cache/
+tmp/
+
+# MMSegmentation 자동 생성 로그
+work_logs/
+
+# MMSegmentation 자동 생성 로그
+work_logs/
