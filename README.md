@@ -101,49 +101,72 @@ pip install mmcv==2.0.1 \
 pip install -r requirements.txt
 ```
 
-### 3.3 데이터셋 / 마스크 준비
+### 3.3 데이터셋 준비
 
-#### (a) Pascal VOC 2012 다운로드
+#### Pascal VOC 2012 다운로드
 
 ```bash
 # VOC 2012 데이터셋 (~2GB) — MMSegmentation 가이드 따름
+mkdir -p datasets && cd datasets
 wget http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar
 tar -xf VOCtrainval_11-May-2012.tar
-# 압축 해제 후 경로: ./VOCdevkit/VOC2012/
+cd ..
+# 압축 해제 후 경로: ./datasets/VOCdevkit/VOC2012/
 ```
 
 자세한 디렉토리 구조는 [MMSegmentation Data Preparation](https://mmsegmentation.readthedocs.io/en/latest/user_guides/2_dataset_prepare.html#pascal-voc) 문서 참조.
 
-#### (b) SAM2 region mask 준비
+### 3.4 SAM2 region mask
 
-본 프로젝트의 SR과 MC는 **사전 생성된 SAM2 region mask가 필요합니다**
-(VOC val 1,449 장의 `.npz` 파일).
+본 프로젝트의 SR과 MC는 **SAM2가 사전 생성한 region mask**를 입력으로
+받습니다. **VOC val 1,449장의 마스크는 본 저장소에 포함되어 있어 별도
+다운로드가 불필요**합니다 (`region_masks/voc/`, 약 10MB).
 
-마스크 생성 방법은 두 가지:
+clone 직후 다음 명령으로 확인:
 
 ```bash
-# 옵션 1: 본인이 직접 생성 (권장)
-# - SAM2 환경 별도 구축 후 scripts/generate_sam2_masks.py 실행
-# - 설치 가이드: https://github.com/facebookresearch/sam2
-# - 자세한 절차는 docs/SAM2_MASK_GENERATION.md 참조
-
-# 옵션 2: 사전 생성된 마스크 다운로드 (제공 예정)
-# - Google Drive 링크: [업로드 후 갱신]
+ls region_masks/voc/ | wc -l    # 1449
 ```
 
-마스크는 `~/region_masks/voc/{stem}.npz` 형태로 저장되며, 각 파일은
-`instance_mask` 키로 `(H, W)` shape의 `uint8` numpy array를 담고 있습니다.
+각 파일은 `{stem}.npz` 형태이고, `instance_mask` 키로 `(H, W)` shape의
+`uint8` numpy array를 담고 있습니다 (예: `2007_000033.npz`).
 
-### 3.4 Config 경로 설정
+#### 다른 데이터셋에서도 SR/MC를 적용하려면
 
-`configs/cfg_voc21.py` 에서 두 경로를 본인 환경에 맞게 수정:
+본 저장소는 VOC val만 마스크를 포함합니다. Pascal Context, COCO 등
+다른 데이터셋의 마스크가 필요하면 [`docs/SAM2_MASK_GENERATION.md`](docs/SAM2_MASK_GENERATION.md)
+가이드를 따라 직접 생성할 수 있습니다 (별도 SAM2 환경 구축 필요).
 
-```python
-data_root = '/path/to/VOCdevkit/VOC2012'   # Pascal VOC 위치
-mask_dir  = '/path/to/region_masks/voc'    # SAM2 mask 위치
+### 3.5 데이터셋 경로 설정 (환경변수)
+
+본 저장소의 config는 **환경변수**로 데이터셋 경로를 지정할 수 있도록
+설계되어 있습니다. 환경변수 미설정 시 **저장소 기준 상대경로**
+(`./datasets/...`)를 자동 사용합니다.
+
+| 환경변수 | 용도 | 기본값 |
+|---------|------|--------|
+| `VOC_ROOT` | Pascal VOC 위치 | `./datasets/VOCdevkit/VOC2012` |
+| `CONTEXT_ROOT` | Pascal Context 위치 | `./datasets/VOC2012` |
+| `SAM2_MASK_VOC` | VOC SAM2 마스크 위치 | `./region_masks/voc` (저장소 포함) |
+
+데이터셋이 다른 위치에 있으면 실행 전 `export` 하시면 됩니다:
+
+```bash
+export VOC_ROOT=/your/path/to/VOCdevkit/VOC2012
+python eval.py --config configs/cfg_voc21.py
 ```
 
-### 3.5 실행
+또는 한 줄로:
+
+```bash
+VOC_ROOT=/your/path python eval.py --config configs/cfg_voc21.py
+```
+
+> ⚠️ **실행은 반드시 저장소 루트(`NACLIP-SR-MC/`)에서** 해주세요.
+> Config의 상대경로는 실행 디렉토리 기준이라, 다른 디렉토리에서 실행하면
+> 마스크를 찾지 못해 자동으로 baseline으로 fallback될 수 있습니다.
+
+### 3.6 실행
 
 ```bash
 conda activate naclip
@@ -156,8 +179,8 @@ python eval.py --config configs/cfg_voc21.py
 ```
 
 예상 실행 시간 (A100 80GB 기준):
-- Baseline: 약 4 ~ 6분
-- SR + MC: 약 6 ~ 8분 (마스크 로드 오버헤드)
+- Baseline: 약 4~6분
+- SR + MC: 약 6~8분 (마스크 로드 오버헤드)
 
 ---
 
@@ -165,34 +188,36 @@ python eval.py --config configs/cfg_voc21.py
 
 ```
 NACLIP-SR-MC/
-├── README.md                     ← 이 파일
-├── LICENSE                       ← MIT (본인 추가분) + Attribution
+├── README.md                       ← 이 파일
+├── LICENSE                         ← MIT (본인 추가분) + Attribution
 ├── requirements.txt
 ├── .gitignore
 │
 ├── clip/
-│   ├── model.py                  ← ★ SR 통합 (custom_attn 함수)
-│   ├── model.py.bak              ← NACLIP 원본 백업
+│   ├── model.py                    ← ★ SR 통합 (custom_attn 함수)
+│   ├── model.py.bak                ← NACLIP 원본 백업
 │   └── ... (그 외 NACLIP 원본 파일)
 │
-├── naclip.py                     ← ★ SAM2 mask 로드 + MC 통합
-├── naclip.py.bak                 ← NACLIP 원본 백업
+├── naclip.py                       ← ★ SAM2 mask 로드 + MC 통합
+├── naclip.py.bak                   ← NACLIP 원본 백업
 │
 ├── configs/
-│   ├── cfg_voc21.py              ← SR + MC 활성화
-│   ├── cfg_voc21_baseline.py     ← Baseline 검증용
-│   └── ... (다른 데이터셋 config)
+│   ├── cfg_voc21.py                ← SR + MC 활성화 (환경변수 기반)
+│   ├── cfg_voc21_baseline.py       ← Baseline 검증용 (mask_dir='')
+│   ├── cfg_voc20.py, cfg_context*.py, cfg_coco*.py, cfg_ade20k.py, cfg_city_scapes.py
+│   │                               ← 다른 벤치마크 config (VOC21만 검증됨)
+│   └── ... (cls_*.txt 등)
 │
-├── eval.py                       ← NACLIP 원본
-├── visualize.py                  ← 시각화 스크립트 (수정됨)
+├── region_masks/
+│   └── voc/                        ← VOC val SAM2 마스크 1,449장 (저장소 포함)
+│
+├── eval.py                         ← NACLIP 원본 평가 스크립트
+├── visualize.py                    ← 시각화 스크립트
 │
 ├── docs/
-│   ├── SAM2_MASK_GENERATION.md   ← SAM2 마스크 생성 가이드
-│   ├── figures/                  ← 파이프라인 다이어그램
-│   └── sample_results/           ← 정성적 비교 이미지 (입력/baseline/SR+MC/GT)
+│   └── SAM2_MASK_GENERATION.md     ← 다른 데이터셋용 SAM2 마스크 생성 가이드
 │
-└── scripts/
-    └── generate_sam2_masks.py    ← (선택) SAM2 마스크 일괄 생성
+└── vis_results/                    ← 샘플 시각화 출력
 ```
 
 ### 4.1 본 프로젝트가 수정/추가한 파일
@@ -201,17 +226,30 @@ NACLIP-SR-MC/
 |------|---------|
 | `clip/model.py` | `custom_attn` 함수에 SR 마스킹 로직 추가 (line 208~220) |
 | `naclip.py` | `__init__`에 `mask_dir` 파라미터, `predict`에 mask 로드, `postprocess_result`에 MC 추가 |
-| `configs/cfg_voc21.py` | `mask_dir` 활성화 |
+| `configs/cfg_voc21.py` | `mask_dir` 활성화 + 환경변수 기반 경로 |
 | `configs/cfg_voc21_baseline.py` | `mask_dir=''` (baseline 비교용) |
+| `configs/cfg_voc20.py`, `cfg_context*.py` | 환경변수 기반 경로로 정리 |
+| `region_masks/voc/` | VOC val SAM2 마스크 1,449장 추가 |
+| `docs/SAM2_MASK_GENERATION.md` | 다른 데이터셋용 마스크 생성 가이드 추가 |
+| `requirements.txt` | 검증된 패키지 버전 명시 |
 
 원본 파일은 `*.bak` 으로 모두 보존되어 있어 `cp model.py.bak model.py`
 한 줄로 NACLIP 순수 baseline으로 즉시 복원 가능.
+
+### 4.2 검증된 범위
+
+| Config | 검증 상태 |
+|--------|----------|
+| `cfg_voc21.py` | ✅ 본인 환경에서 검증 (VOC21 mIoU = 71.94) |
+| `cfg_voc21_baseline.py` | ✅ 본인 환경에서 검증 (VOC21 mIoU = 58.88) |
+| `cfg_voc20.py`, `cfg_context*.py` | ⚠️ 절대경로 정리만 됨, 본인 환경에서는 미검증 |
+| `cfg_coco*.py`, `cfg_ade20k.py`, `cfg_city_scapes.py` | ⚠️ NACLIP 원본 그대로, 본인 환경에서는 미검증 |
 
 ---
 
 ## 5. SR / MC 핵심 코드 발췌
 
-### 5.1 Scope Reconstruction (`clip/model.py:208~220`)
+### 5.1 Scope Reconstruction (`clip/model.py` 약 208~220 line)
 
 ```python
 # === Scope Reconstruction (SR) ===
@@ -223,7 +261,7 @@ if instance_masks is not None:
     attn_weights[..., 1:, 1:][~E] = float('-inf')
 ```
 
-### 5.2 Map Correction (`naclip.py:postprocess_result`)
+### 5.2 Map Correction (`naclip.py` postprocess_result 부분)
 
 ```python
 # === Map Correction (MC) ===
@@ -238,10 +276,10 @@ for region_id in torch.unique(sam2_mask):
 
 ## 6. 실행 결과 화면
 
-자세한 결과는 [`docs/sample_results/`](docs/sample_results/) 참조.
+샘플 시각화 출력은 [`vis_results/`](vis_results/) 폴더 참조 (6장의 VOC val
+이미지).
 
-> ⚠️ 정성적 비교 이미지(input → baseline → SR+MC → GT)는 별도 업로드
-> 예정입니다. 본 README는 검증된 정량적 결과만 포함합니다.
+> 정성적 비교 이미지 (input → baseline → SR+MC → GT) 추가 업로드 예정.
 
 ---
 
@@ -249,7 +287,7 @@ for region_id in torch.unique(sam2_mask):
 
 - 추가 벤치마크 평가 진행 중: VOC20, Pascal Context60, COCO-Object
 - CorrCLIP의 VR (Value Reconstruction), FR (Feature Refinement) 추가
-  통합 시 추가 개선 가능 (논문 보고값 74.8 → 96.7% 도달 중)
+  통합 시 추가 개선 가능 (논문 보고값 74.8 도달 가능성)
 - MC-only ablation은 추가 실험 필요
 
 ---
