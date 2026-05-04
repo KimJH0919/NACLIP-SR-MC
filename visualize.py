@@ -211,8 +211,8 @@ def main():
     text_features = torch.stack(text_features)
 
     # Select images
-    voc_root = '/home/elicer/DeOP/datasets/VOCdevkit/VOC2012'
-    mask_dir = '/home/elicer/DeOP/region_masks/voc'
+    voc_root = os.environ.get('VOC_ROOT', './datasets/VOCdevkit/VOC2012')
+    mask_dir = os.environ.get('SAM2_MASK_VOC', './region_masks/voc')
     img_dir = os.path.join(voc_root, 'JPEGImages')
 
     # Choose diverse images

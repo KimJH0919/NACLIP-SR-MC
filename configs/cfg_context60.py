@@ -1,3 +1,4 @@
+import os
 _base_ = './base_config.py'
 
 # model settings
@@ -8,7 +9,10 @@ model = dict(
 
 # dataset settings
 dataset_type = 'PascalContext60Dataset'
-data_root = '/home/elicer/DeOP/datasets/VOC2012'
+data_root = os.environ.get(
+    'CONTEXT_ROOT',
+    './datasets/VOC2012'
+)
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),

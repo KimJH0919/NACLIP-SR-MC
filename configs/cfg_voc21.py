@@ -1,17 +1,25 @@
+import os
 _base_ = './base_config.py'
+
+mask_dir = os.environ.get(
+    'SAM2_MASK_VOC',
+    './region_masks/voc'
+)
 
 # model settings
 model = dict(
     name_path='./configs/cls_voc21.txt',
     prob_thd=0.1,
     slide_crop=0,
-    mask_dir='/home/elicer/DeOP/region_masks/voc',
+    mask_dir=mask_dir,
 )
 
 # dataset settings
 dataset_type = 'PascalVOCDataset'
-data_root = '/home/elicer/DeOP/datasets/VOCdevkit/VOC2012'
-
+data_root = os.environ.get(
+    'VOC_ROOT',
+    './datasets/VOCdevkit/VOC2012'
+)
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='Resize', scale=(2048, 336), keep_ratio=True),

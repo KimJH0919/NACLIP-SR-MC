@@ -18,6 +18,10 @@ data/
 # SAM2 region masks (1,449~5,000 npz files, 수백 MB)
 region_masks/
 **/region_masks/
+# === Whitelist: VOC val SAM2 masks (1,449 files, ~10MB) ===
+!region_masks/
+!region_masks/voc/
+!region_masks/voc/*.npz
 
 # Pretrained model weights
 *.pth
