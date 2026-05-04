@@ -297,7 +297,7 @@ for region_id in torch.unique(sam2_mask):
 - **소속**: 성균관대학교 Smart Factory Convergence
 - **수강 과목**: 캡스톤 디자인
 - **수행자**: 김정훈 (hun0919@skku.edu)
-- **수행 기간**: 2025년 1학기
+- **수행 기간**: 2026년 1학기
 
 ---
 
